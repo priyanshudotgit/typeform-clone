@@ -49,10 +49,10 @@ backend/*.sqlite3
 !.env.sample
 frontend/.env
 frontend/.env.*
-!.frontend/.env.sample
+!frontend/.env.sample
 backend/.env
 backend/.env.*
-!.backend/.env.sample
+!backend/.env.sample
 
 # ─── OS & IDE ─────────────────────────────────────────────────
 .DS_Store
