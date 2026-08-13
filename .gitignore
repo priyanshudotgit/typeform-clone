@@ -1,0 +1,76 @@
+# ─── Frontend (Next.js & Node) ────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel/
+frontend/coverage/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+frontend/.eslintcache
+frontend/.swc/
+frontend/.turbo/
+frontend/.pnp
+frontend/.pnp.*
+frontend/.yarn/*
+!frontend/.yarn/patches
+!frontend/.yarn/plugins
+!frontend/.yarn/releases
+!frontend/.yarn/versions
+
+# ─── Backend (Python / FastAPI) ───────────────────────────────
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.venv/
+backend/venv/
+backend/env/
+backend/ENV/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
+backend/build/
+backend/dist/
+backend/*.egg-info/
+backend/wheels/
+
+# SQLite databases (dev only, do not commit)
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# ─── Environment files (never commit real secrets) ────────────
+.env
+.env.*
+!.env.sample
+frontend/.env
+frontend/.env.*
+!.frontend/.env.sample
+backend/.env
+backend/.env.*
+!.backend/.env.sample
+
+# ─── OS & IDE ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.pem
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+
+# ─── Logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── Agents & Miscellaneous ───────────────────────────────────
+.agents/
+skills-lock.json
