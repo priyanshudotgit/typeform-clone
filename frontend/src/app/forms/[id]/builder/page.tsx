@@ -161,11 +161,28 @@ export default function FormBuilderPage() {
     }
   };
 
+  const validateForm = () => {
+    for (const q of localForm.questions) {
+      if (!q.text || q.text.trim() === '') {
+        return "Please provide a title for all questions.";
+      }
+      if (q.type.includes('choice')) {
+        if (!q.choices || q.choices.length === 0) {
+          return `Question "${q.text}" requires at least one option.`;
+        }
+        if (q.choices.some(c => !c.text || c.text.trim() === '')) {
+          return `Please provide text for all options in question "${q.text}".`;
+        }
+      }
+    }
+    return null;
+  };
+
   const handleSave = async () => {
     if (localForm.is_published) {
-      const invalidQuestions = localForm.questions.filter(q => !q.text || q.text.trim() === '');
-      if (invalidQuestions.length > 0) {
-        alert("Please provide a title for all questions before saving a published form.");
+      const errorMsg = validateForm();
+      if (errorMsg) {
+        alert(errorMsg + " (Required before saving a published form)");
         return;
       }
     }
@@ -265,9 +282,9 @@ export default function FormBuilderPage() {
           <button
             onClick={() => {
               if (!localForm.is_published) {
-                const invalidQuestions = localForm.questions.filter(q => !q.text || q.text.trim() === '');
-                if (invalidQuestions.length > 0) {
-                  alert("Please provide a title for all questions before publishing.");
+                const errorMsg = validateForm();
+                if (errorMsg) {
+                  alert(errorMsg + " (Required before publishing)");
                   return;
                 }
               }
