@@ -44,25 +44,38 @@ export default function ServerWakeupBanner() {
         if (dotInterval) clearInterval(dotInterval);
         return;
       }
+
+      let slowTimer: ReturnType<typeof setTimeout> | null = null;
+      if (isFirst) {
+        // If the server takes more than 1.5s to respond, assume it's sleeping
+        slowTimer = setTimeout(() => {
+          if (!cancelled) {
+            setStatus("checking");
+            startVisible();
+          }
+        }, 1500);
+      }
+
       try {
         const res = await fetch(HEALTH_ENDPOINT, {
           method: "GET",
           cache: "no-store",
-          signal: AbortSignal.timeout(8000),
+          // We removed the short 8s timeout here so that a slow waking Render 
+          // instance won't falsely trigger a catch block.
         });
+        
+        if (slowTimer) clearTimeout(slowTimer);
+
         if (res.ok && !cancelled) {
           setStatus("awake");
           if (dotInterval) clearInterval(dotInterval);
           return;
         }
       } catch {
-        // server sleeping
+        if (slowTimer) clearTimeout(slowTimer);
       }
+      
       if (!cancelled) {
-        if (isFirst) {
-          setStatus("checking");
-          startVisible();
-        }
         setTimeout(() => ping(false), POLL_INTERVAL_MS);
       }
     }
@@ -87,10 +100,10 @@ export default function ServerWakeupBanner() {
         <div style={styles.pulse} />
         <div style={styles.iconInner}>
           <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-            <rect x="2" y="6" width="28" height="8" rx="3" fill="#6366f1" />
-            <rect x="2" y="18" width="28" height="8" rx="3" fill="#818cf8" />
-            <circle cx="26" cy="10" r="2" fill="#a5f3fc" />
-            <circle cx="26" cy="22" r="2" fill="#6ee7b7" />
+            <rect x="2" y="6" width="28" height="8" rx="3" fill="#191919" />
+            <rect x="2" y="18" width="28" height="8" rx="3" fill="#6b6b6b" />
+            <circle cx="26" cy="10" r="2" fill="#e5e5e5" />
+            <circle cx="26" cy="22" r="2" fill="#e5e5e5" />
           </svg>
         </div>
       </div>
@@ -114,7 +127,7 @@ export default function ServerWakeupBanner() {
           </>
         ) : (
           <>
-            <h3 style={{ ...styles.title, color: "#f87171" }}>Taking longer than usual</h3>
+            <h3 style={{ ...styles.title, color: "#ef4444" }}>Taking longer than usual</h3>
             <p style={styles.subtitle}>Server might be under load.</p>
             <button
               style={styles.retryBtn}
@@ -150,12 +163,12 @@ const styles: Record<string, React.CSSProperties> = {
     top: "20px",
     right: "20px",
     zIndex: 9999,
-    background: "linear-gradient(135deg, #1e1b4b 0%, #1e1e2e 100%)",
-    border: "1px solid rgba(99,102,241,0.35)",
+    background: "#ffffff",
+    border: "1px solid #e5e5e5",
     borderRadius: "12px",
     padding: "1rem",
     width: "min(350px, calc(100vw - 40px))",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.5), 0 0 40px rgba(99,102,241,0.1)",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
@@ -175,15 +188,15 @@ const styles: Record<string, React.CSSProperties> = {
     position: "absolute",
     inset: 0,
     borderRadius: "50%",
-    background: "rgba(99,102,241,0.4)",
+    background: "rgba(25,25,25,0.06)",
     animation: "wakeup-pulse 2s ease-out infinite",
   },
   iconInner: {
     width: 32,
     height: 32,
     borderRadius: "50%",
-    background: "rgba(99,102,241,0.2)",
-    border: "1px solid rgba(99,102,241,0.5)",
+    background: "#f7f5f2",
+    border: "1px solid #e5e5e5",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -198,37 +211,37 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: "0.95rem",
     fontWeight: 600,
-    color: "#e0e7ff",
+    color: "#191919",
     whiteSpace: "nowrap",
   },
   subtitle: {
     margin: "0.2rem 0 0",
     fontSize: "0.75rem",
-    color: "#94a3b8",
+    color: "#6b6b6b",
     lineHeight: 1.4,
   },
   timer: {
-    color: "#64748b",
+    color: "#9b9b9b",
   },
   progressTrack: {
     width: "100%",
     height: 4,
-    background: "rgba(255,255,255,0.08)",
+    background: "#f0ebe3",
     borderRadius: 999,
     overflow: "hidden",
     marginTop: "0.5rem",
   },
   progressBar: {
     height: "100%",
-    background: "linear-gradient(90deg, #6366f1, #a78bfa)",
+    background: "#191919",
     borderRadius: 999,
     width: 0,
   },
   retryBtn: {
     marginTop: "0.5rem",
     padding: "0.4rem 1rem",
-    background: "linear-gradient(135deg, #6366f1, #818cf8)",
-    color: "#fff",
+    background: "#191919",
+    color: "#ffffff",
     border: "none",
     borderRadius: "6px",
     fontWeight: 600,
