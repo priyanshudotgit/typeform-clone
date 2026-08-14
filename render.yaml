@@ -10,5 +10,7 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      - key: LIBSQL_AUTH_TOKEN
+        sync: false
       - key: PYTHON_VERSION
         value: 3.12.10

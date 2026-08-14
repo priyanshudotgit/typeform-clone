@@ -1,13 +1,16 @@
 import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+load_dotenv()
 
 database_url = os.getenv("DATABASE_URL", "sqlite:///./typeform_clone.db")
 
 auth_token = os.getenv("LIBSQL_AUTH_TOKEN")
 if auth_token and database_url.startswith("sqlite+libsql://"):
     separator = "&" if "?" in database_url else "?"
-    database_url = f"{database_url}{separator}authToken={auth_token}"
+    database_url = f"{database_url}{separator}authToken={auth_token}&secure=true"
 
 SQLALCHEMY_DATABASE_URL = database_url
 
@@ -16,6 +19,9 @@ connect_args = (
     if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///") 
     else {}
 )
+
+print("DATABASE_URL =", database_url)
+print("LIBSQL_AUTH_TOKEN exists:", bool(auth_token))
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
