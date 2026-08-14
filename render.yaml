@@ -9,8 +9,4 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        value: sqlite:////data/typeform_clone.db
-    disk:
-      name: sqlite-data
-      mountPath: /data
-      sizeGB: 1
+        sync: false
