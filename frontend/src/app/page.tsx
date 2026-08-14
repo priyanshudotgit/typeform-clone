@@ -61,7 +61,7 @@ function Navbar() {
         <Link href="/login" className="btn-ghost">
           Log in
         </Link>
-        <Link href="/register" className="btn-primary">
+        <Link href="/login" className="btn-primary">
           Get started free
         </Link>
       </div>
@@ -88,7 +88,7 @@ function Hero() {
           answering fun, whether it&apos;s questions, quizzes, or apps.
         </p>
         <div className="hero-cta-group animate-fadein-delay-2">
-          <Link href="/register" className="btn-primary btn-primary-large">
+          <Link href="/login" className="btn-primary btn-primary-large">
             Sign up for free
           </Link>
           <span className="hero-note">No credit card required</span>
@@ -430,7 +430,7 @@ function Templates() {
       </div>
       <div className="templates-grid">
         {templates.map((t) => (
-          <a key={t.name} href="/register" className="template-card">
+          <a key={t.name} href="/login" className="template-card">
             <div className="template-thumb" style={{ background: t.bg }}>
               <span style={{ fontSize: "3rem" }}>{t.emoji}</span>
             </div>
@@ -520,7 +520,7 @@ function CTASection() {
         better relationships.
       </p>
       <div className="cta-actions">
-        <Link href="/register" className="btn-primary btn-primary-large">
+        <Link href="/login" className="btn-primary btn-primary-large">
           Sign up for free
         </Link>
         <a href="#features" className="btn-secondary">
@@ -566,7 +566,7 @@ function Footer() {
             <ul>
               {col.links.map((link) => (
                 <li key={link}>
-                  <a href="/register" dangerouslySetInnerHTML={{ __html: link }} />
+                  <a href="/login" dangerouslySetInnerHTML={{ __html: link }} />
                 </li>
               ))}
             </ul>
