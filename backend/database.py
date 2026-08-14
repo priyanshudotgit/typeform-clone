@@ -8,17 +8,18 @@ load_dotenv()
 database_url = os.getenv("DATABASE_URL", "sqlite:///./typeform_clone.db")
 
 auth_token = os.getenv("LIBSQL_AUTH_TOKEN")
-if auth_token and database_url.startswith("sqlite+libsql://"):
-    separator = "&" if "?" in database_url else "?"
-    database_url = f"{database_url}{separator}authToken={auth_token}&secure=true"
 
 SQLALCHEMY_DATABASE_URL = database_url
 
-connect_args = (
-    {"check_same_thread": False} 
-    if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///") 
-    else {}
-)
+is_libsql = database_url.startswith("sqlite+libsql://")
+is_local_sqlite = database_url.startswith("sqlite:///")
+
+connect_args = {}
+if is_local_sqlite:
+    connect_args["check_same_thread"] = False
+elif is_libsql and auth_token:
+    connect_args["auth_token"] = auth_token
+    connect_args["secure"] = True
 
 print("DATABASE_URL =", database_url)
 print("LIBSQL_AUTH_TOKEN exists:", bool(auth_token))
