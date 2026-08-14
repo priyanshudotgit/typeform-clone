@@ -31,7 +31,12 @@ export default function PublicFormPage() {
       
       if (e.key === 'Enter') {
         e.preventDefault();
-        handleNext();
+        if (form && currentSlideIndex === form.questions.length) {
+          const btn = document.getElementById('submit-response-btn');
+          if (btn) btn.click();
+        } else {
+          handleNext();
+        }
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -289,6 +294,7 @@ export default function PublicFormPage() {
                 Ready to submit?
               </h2>
               <button
+                id="submit-response-btn"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 className="rounded-xl bg-zinc-900 px-8 py-4 text-2xl font-bold text-white transition-transform hover:scale-105 active:scale-95 dark:bg-white dark:text-black disabled:opacity-50"

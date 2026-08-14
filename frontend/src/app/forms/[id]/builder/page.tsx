@@ -162,6 +162,14 @@ export default function FormBuilderPage() {
   };
 
   const handleSave = async () => {
+    if (localForm.is_published) {
+      const invalidQuestions = localForm.questions.filter(q => !q.text || q.text.trim() === '');
+      if (invalidQuestions.length > 0) {
+        alert("Please provide a title for all questions before saving a published form.");
+        return;
+      }
+    }
+
     await updateForm.mutateAsync({
       id: formId,
       data: {
@@ -255,14 +263,23 @@ export default function FormBuilderPage() {
             Preview
           </NextLink>
           <button
-            onClick={() => setLocalForm({...localForm, is_published: !localForm.is_published})}
+            onClick={() => {
+              if (!localForm.is_published) {
+                const invalidQuestions = localForm.questions.filter(q => !q.text || q.text.trim() === '');
+                if (invalidQuestions.length > 0) {
+                  alert("Please provide a title for all questions before publishing.");
+                  return;
+                }
+              }
+              setLocalForm({...localForm, is_published: !localForm.is_published})
+            }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               localForm.is_published 
                 ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-400' 
                 : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300'
             }`}
           >
-            {localForm.is_published ? 'Published' : 'Draft'}
+            {localForm.is_published ? 'Published' : 'Publish'}
           </button>
           <button
             onClick={handleSave}

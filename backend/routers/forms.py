@@ -56,11 +56,10 @@ async def _build_form_response(db, form: dict) -> FormResponse:
 
 async def _insert_questions(db, form_id: int, questions_in):
     for q_in in questions_in:
-        await db.execute(
-            'INSERT INTO questions (form_id, text, type, "order", is_required) VALUES (?,?,?,?,?)',
+        rs = await db.execute(
+            'INSERT INTO questions (form_id, text, type, "order", is_required) VALUES (?,?,?,?,?) RETURNING id',
             [form_id, q_in.text, q_in.type.value, q_in.order, int(q_in.is_required)],
         )
-        rs = await db.execute("SELECT last_insert_rowid() AS id")
         q_id = first_row(rs)["id"]
 
         if q_in.choices:
@@ -101,11 +100,10 @@ async def create_form(
     db=Depends(get_db),
     current_user: UserInfo = Depends(get_current_user),
 ):
-    await db.execute(
-        "INSERT INTO forms (title, description, is_published, user_id) VALUES (?,?,?,?)",
+    rs = await db.execute(
+        "INSERT INTO forms (title, description, is_published, user_id) VALUES (?,?,?,?) RETURNING id",
         [form_in.title, form_in.description, int(form_in.is_published), current_user.id],
     )
-    rs = await db.execute("SELECT last_insert_rowid() AS id")
     form_id_new = first_row(rs)["id"]
 
     if form_in.questions:
@@ -132,6 +130,16 @@ async def update_form(
     await db.execute(
         "UPDATE forms SET title=?, description=?, is_published=?, updated_at=datetime('now') WHERE id=?",
         [form_in.title, form_in.description, int(form_in.is_published), form_id],
+    )
+    # Delete answers and responses first to avoid foreign key constraint errors
+    await db.execute(
+        "DELETE FROM answers WHERE question_id IN (SELECT id FROM questions WHERE form_id = ?)", 
+        [form_id]
+    )
+    await db.execute("DELETE FROM responses WHERE form_id = ?", [form_id])
+    await db.execute(
+        "DELETE FROM question_choices WHERE question_id IN (SELECT id FROM questions WHERE form_id = ?)",
+        [form_id]
     )
     await db.execute("DELETE FROM questions WHERE form_id = ?", [form_id])
 
@@ -172,20 +180,18 @@ async def duplicate_form(
     if original["user_id"] != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    await db.execute(
-        "INSERT INTO forms (title, description, is_published, user_id) VALUES (?,?,0,?)",
+    rs = await db.execute(
+        "INSERT INTO forms (title, description, is_published, user_id) VALUES (?,?,0,?) RETURNING id",
         [f"{original['title']} (Copy)", original["description"], current_user.id],
     )
-    rs = await db.execute("SELECT last_insert_rowid() AS id")
     new_form_id = first_row(rs)["id"]
 
     rs = await db.execute('SELECT * FROM questions WHERE form_id = ? ORDER BY "order"', [form_id])
     for q in rows_to_dicts(rs):
-        await db.execute(
-            'INSERT INTO questions (form_id, text, type, "order", is_required) VALUES (?,?,?,?,?)',
+        rs2 = await db.execute(
+            'INSERT INTO questions (form_id, text, type, "order", is_required) VALUES (?,?,?,?,?) RETURNING id',
             [new_form_id, q["text"], q["type"], q["order"], q["is_required"]],
         )
-        rs2 = await db.execute("SELECT last_insert_rowid() AS id")
         new_q_id = first_row(rs2)["id"]
         rs3 = await db.execute(
             'SELECT * FROM question_choices WHERE question_id = ? ORDER BY "order"', [q["id"]]
@@ -208,8 +214,7 @@ async def submit_response(form_id: int, response_in: ResponseCreate, db=Depends(
     if not first_row(rs):
         raise HTTPException(status_code=404, detail="Form not found")
 
-    await db.execute("INSERT INTO responses (form_id) VALUES (?)", [form_id])
-    rs = await db.execute("SELECT last_insert_rowid() AS id")
+    rs = await db.execute("INSERT INTO responses (form_id) VALUES (?) RETURNING id", [form_id])
     resp_id = first_row(rs)["id"]
     rs = await db.execute("SELECT * FROM responses WHERE id = ?", [resp_id])
     resp = first_row(rs)
