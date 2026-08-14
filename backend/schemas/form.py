@@ -1,47 +1,62 @@
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
 from datetime import datetime, timezone
-from models.form import QuestionType
+import enum
 
-# --- Choices ---
+
+class QuestionType(str, enum.Enum):
+    text = "text"
+    long_text = "long_text"
+    single_choice = "single_choice"
+    multiple_choice = "multiple_choice"
+
+
+# ── Choices ──────────────────────────────────────────────────────────────────
+
 class QuestionChoiceBase(BaseModel):
     text: str
     order: int = 0
 
+
 class QuestionChoiceCreate(QuestionChoiceBase):
     pass
+
 
 class QuestionChoiceResponse(QuestionChoiceBase):
     id: int
     question_id: int
 
-    model_config = ConfigDict(from_attributes=True)
 
-# --- Questions ---
+# ── Questions ─────────────────────────────────────────────────────────────────
+
 class QuestionBase(BaseModel):
     text: str
     type: QuestionType
     order: int = 0
     is_required: bool = False
 
+
 class QuestionCreate(QuestionBase):
     choices: Optional[List[QuestionChoiceCreate]] = []
+
 
 class QuestionResponse(QuestionBase):
     id: int
     form_id: int
     choices: List[QuestionChoiceResponse] = []
 
-    model_config = ConfigDict(from_attributes=True)
 
-# --- Forms ---
+# ── Forms ─────────────────────────────────────────────────────────────────────
+
 class FormBase(BaseModel):
     title: str
     description: Optional[str] = None
     is_published: bool = False
 
+
 class FormCreate(FormBase):
     questions: Optional[List[QuestionCreate]] = []
+
 
 class FormResponse(FormBase):
     id: int
@@ -49,30 +64,37 @@ class FormResponse(FormBase):
     updated_at: Optional[datetime] = None
     questions: List[QuestionResponse] = []
 
-    @field_validator('created_at', 'updated_at')
-    def enforce_utc(cls, v):
-        if v and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
+    @field_validator("created_at", "updated_at", mode="before")
+    @classmethod
+    def parse_dt(cls, v):
+        if v is None:
+            return v
+        if isinstance(v, datetime):
+            return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        # SQLite stores as ISO string
+        dt = datetime.fromisoformat(str(v))
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
-    model_config = ConfigDict(from_attributes=True)
 
-# --- Answers & Responses ---
+# ── Answers & Responses ───────────────────────────────────────────────────────
+
 class AnswerBase(BaseModel):
     question_id: int
     text_value: Optional[str] = None
 
+
 class AnswerCreate(AnswerBase):
     pass
+
 
 class AnswerResponse(AnswerBase):
     id: int
     response_id: int
 
-    model_config = ConfigDict(from_attributes=True)
 
 class ResponseCreate(BaseModel):
     answers: List[AnswerCreate]
+
 
 class ResponseResponse(BaseModel):
     id: int
@@ -80,10 +102,10 @@ class ResponseResponse(BaseModel):
     created_at: datetime
     answers: List[AnswerResponse] = []
 
-    @field_validator('created_at')
-    def enforce_utc(cls, v):
-        if v and v.tzinfo is None:
-            return v.replace(tzinfo=timezone.utc)
-        return v
-
-    model_config = ConfigDict(from_attributes=True)
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def parse_dt(cls, v):
+        if isinstance(v, datetime):
+            return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        dt = datetime.fromisoformat(str(v))
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
