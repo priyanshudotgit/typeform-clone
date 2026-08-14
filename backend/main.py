@@ -29,6 +29,6 @@ app.include_router(auth_router.router, prefix="/api")
 app.include_router(forms_router, prefix="/api")
 
 
-@app.get("/health", tags=["Health"])
+@app.get("/api/status", tags=["Health"])
 def health_check():
     return {"status": "ok", "message": "API is running smoothly"}

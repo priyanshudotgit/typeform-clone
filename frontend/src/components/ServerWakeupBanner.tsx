@@ -4,11 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") ||
-  "https://typeform-clone-backend-0o3e.onrender.com";
-
-const HEALTH_ENDPOINT = `${BACKEND_URL}/health`;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://typeform-clone-backend-0o3e.onrender.com/api";
+const HEALTH_ENDPOINT = `${API_URL}/status`;
 const POLL_INTERVAL_MS = 5000;
 const MAX_WAIT_MS = 120_000; // 2 min timeout
 

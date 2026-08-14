@@ -41,13 +41,12 @@ export function FormCard({ form }: FormCardProps) {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                form.is_published
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${form.is_published
                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                   : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'
-              }`}
+                }`}
             >
-              {form.is_published ? 'Published' : 'Draft'}
+              {form.is_published ? 'Published' : 'Publish'}
             </span>
           </div>
           <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1">
@@ -115,7 +114,7 @@ export function FormCard({ form }: FormCardProps) {
             <Edit3 size={16} />
             Edit
           </NextLink>
-          
+
           <NextLink
             href={`/forms/${form.id}/responses`}
             className="flex items-center justify-center rounded-lg border border-zinc-200 bg-white p-2 text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
@@ -136,11 +135,11 @@ export function FormCard({ form }: FormCardProps) {
           )}
         </div>
       </div>
-      
+
       {/* Overlay for clicking outside menu */}
       {isMenuOpen && (
-        <div 
-          className="fixed inset-0 z-0" 
+        <div
+          className="fixed inset-0 z-0"
           onClick={(e) => {
             e.preventDefault();
             setIsMenuOpen(false);
